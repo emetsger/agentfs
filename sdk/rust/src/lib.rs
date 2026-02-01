@@ -114,6 +114,9 @@ pub struct AgentFSOptions {
     pub sync: SyncOptions,
     /// Encryption configuration for database at rest
     pub encryption: Option<EncryptionConfig>,
+    /// Chunk size for file data storage (default: 4096).
+    /// Only used when creating a new database; ignored for existing databases.
+    pub chunk_size: Option<usize>,
 }
 
 impl AgentFSOptions {
@@ -155,6 +158,7 @@ impl AgentFSOptions {
             base: None,
             sync: SyncOptions::default(),
             encryption: None,
+            chunk_size: None,
         }
     }
 
@@ -166,6 +170,7 @@ impl AgentFSOptions {
             base: None,
             sync: SyncOptions::default(),
             encryption: None,
+            chunk_size: None,
         }
     }
 
@@ -177,6 +182,7 @@ impl AgentFSOptions {
             base: None,
             sync: SyncOptions::default(),
             encryption: None,
+            chunk_size: None,
         }
     }
 
@@ -208,6 +214,14 @@ impl AgentFSOptions {
     /// Set encryption configuration directly
     pub fn with_encryption(mut self, encryption: EncryptionConfig) -> Self {
         self.encryption = Some(encryption);
+        self
+    }
+
+    /// Set the chunk size for file data storage.
+    /// Only used when creating a new database; ignored for existing databases.
+    /// Default is 4096 bytes.
+    pub fn with_chunk_size(mut self, chunk_size: usize) -> Self {
+        self.chunk_size = Some(chunk_size);
         self
     }
 
@@ -357,7 +371,7 @@ impl AgentFS {
             OverlayFS::init_schema(&conn, &base_path_str).await?;
         }
 
-        Self::open_with_pool(pool, sync_db).await
+        Self::open_with_pool_and_chunk_size(pool, sync_db, options.chunk_size).await
     }
 
     /// Open an AgentFS instance from a connection pool
@@ -365,8 +379,17 @@ impl AgentFS {
         pool: connection_pool::ConnectionPool,
         sync_db: Option<turso::sync::Database>,
     ) -> Result<Self> {
+        Self::open_with_pool_and_chunk_size(pool, sync_db, None).await
+    }
+
+    /// Open an AgentFS instance from a connection pool with optional chunk size
+    pub async fn open_with_pool_and_chunk_size(
+        pool: connection_pool::ConnectionPool,
+        sync_db: Option<turso::sync::Database>,
+        chunk_size: Option<usize>,
+    ) -> Result<Self> {
         let kv = KvStore::from_pool(pool.clone()).await?;
-        let fs = filesystem::AgentFS::from_pool(pool.clone()).await?;
+        let fs = filesystem::AgentFS::from_pool_with_chunk_size(pool.clone(), chunk_size).await?;
         let tools = ToolCalls::from_pool(pool.clone()).await?;
 
         Ok(Self {

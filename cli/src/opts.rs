@@ -100,6 +100,11 @@ pub enum Command {
         #[arg(long, default_value_t = MountBackend::default())]
         backend: MountBackend,
 
+        /// Chunk size for file data storage in bytes (default: 4096).
+        /// Only used when creating a new database; cannot be changed later.
+        #[arg(long)]
+        chunk_size: Option<usize>,
+
         #[command(flatten)]
         sync: SyncCommandOptions,
     },

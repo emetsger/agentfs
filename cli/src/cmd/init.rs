@@ -79,6 +79,7 @@ pub async fn init_database(
     encryption: Option<EncryptionOptions>,
     command: Option<String>,
     backend: MountBackend,
+    chunk_size: Option<usize>,
 ) -> AnyhowResult<()> {
     // Generate ID if not provided
     let id = id.unwrap_or_else(|| {
@@ -133,6 +134,9 @@ pub async fn init_database(
     if let Some(base_path) = base.as_ref() {
         open_options = open_options.with_base(base_path);
     }
+    if let Some(size) = chunk_size {
+        open_options = open_options.with_chunk_size(size);
+    }
 
     let encrypted = if let Some(enc_opts) = encryption {
         if sync_options.sync_remote_url.is_some() {
@@ -177,6 +181,9 @@ pub async fn init_database(
         eprintln!("Created overlay filesystem: {}", db_path.display());
         eprintln!("Agent ID: {}", id);
         eprintln!("Base: {}", base_path.display());
+        if let Some(size) = chunk_size {
+            eprintln!("Chunk size: {}", size);
+        }
         if encrypted {
             eprintln!("Encryption: enabled");
         }
@@ -187,6 +194,9 @@ pub async fn init_database(
 
         eprintln!("Created agent filesystem: {}", db_path.display());
         eprintln!("Agent ID: {}", id);
+        if let Some(size) = chunk_size {
+            eprintln!("Chunk size: {}", size);
+        }
         if encrypted {
             eprintln!("Encryption: enabled");
         }

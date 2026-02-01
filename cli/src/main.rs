@@ -47,6 +47,7 @@ fn main() {
             cipher,
             command,
             backend,
+            chunk_size,
             sync,
         } => {
             let rt = get_runtime();
@@ -60,6 +61,7 @@ fn main() {
                 encryption_opts,
                 command,
                 backend,
+                chunk_size,
             )) {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);

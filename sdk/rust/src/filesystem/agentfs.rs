@@ -427,10 +427,18 @@ impl AgentFS {
 
     /// Create a filesystem from a connection pool
     pub async fn from_pool(pool: ConnectionPool) -> Result<Self> {
+        Self::from_pool_with_chunk_size(pool, None).await
+    }
+
+    /// Create a filesystem from a connection pool with optional chunk size
+    pub async fn from_pool_with_chunk_size(
+        pool: ConnectionPool,
+        chunk_size: Option<usize>,
+    ) -> Result<Self> {
         let conn = pool.get_connection().await?;
 
-        // Initialize schema first
-        Self::initialize_schema(&conn).await?;
+        // Initialize schema first (with optional chunk size for new databases)
+        Self::initialize_schema_with_chunk_size(&conn, chunk_size).await?;
 
         // Disable synchronous mode for filesystem fsync() semantics.
         conn.execute("PRAGMA synchronous = OFF", ()).await?;
@@ -467,6 +475,14 @@ impl AgentFS {
 
     /// Initialize the database schema
     pub async fn initialize_schema(conn: &Connection) -> Result<()> {
+        Self::initialize_schema_with_chunk_size(conn, None).await
+    }
+
+    /// Initialize the database schema with optional chunk size
+    pub async fn initialize_schema_with_chunk_size(
+        conn: &Connection,
+        chunk_size: Option<usize>,
+    ) -> Result<()> {
         // Create config table
         conn.execute(
             "CREATE TABLE IF NOT EXISTS fs_config (
@@ -558,15 +574,16 @@ impl AgentFS {
         )
         .await?;
 
-        // Ensure chunk_size config exists
+        // Ensure chunk_size config exists (use provided value for new databases)
         let mut rows = conn
             .query("SELECT value FROM fs_config WHERE key = 'chunk_size'", ())
             .await?;
 
         if rows.next().await?.is_none() {
+            let size = chunk_size.unwrap_or(DEFAULT_CHUNK_SIZE);
             conn.execute(
                 "INSERT INTO fs_config (key, value) VALUES ('chunk_size', ?)",
-                (DEFAULT_CHUNK_SIZE.to_string(),),
+                (size.to_string(),),
             )
             .await?;
         }
