@@ -94,6 +94,7 @@ pub async fn handle_exec_command(
         auto_unmount: false,
         lazy_unmount: true,
         timeout: std::time::Duration::from_secs(10),
+        dev: false,
     };
 
     // Mount the filesystem

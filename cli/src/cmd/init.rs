@@ -240,6 +240,7 @@ async fn run_init_cmd(
         auto_unmount: false,
         lazy_unmount: true,
         timeout: std::time::Duration::from_secs(10),
+        dev: false,
     };
 
     let mount_handle = mount_fs(fs, mount_opts).await?;

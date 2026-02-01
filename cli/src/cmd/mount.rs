@@ -51,6 +51,8 @@ pub struct MountArgs {
     pub gid: Option<u32>,
     /// The mount backend to use (fuse or nfs).
     pub backend: MountBackend,
+    /// Allow device special files (default: nodev).
+    pub dev: bool,
 }
 
 /// Mount the agent filesystem (Linux).
@@ -114,6 +116,7 @@ fn mount_fuse(args: MountArgs) -> Result<()> {
         fsname,
         uid: args.uid,
         gid: args.gid,
+        dev: args.dev,
     };
 
     let mount = move || {
@@ -242,6 +245,7 @@ async fn mount_nfs_backend(args: MountArgs) -> Result<()> {
             auto_unmount: args.auto_unmount,
             lazy_unmount: true,
             timeout: std::time::Duration::from_secs(10),
+            dev: args.dev,
         };
 
         let _mount_handle = mount_fs(fs, mount_opts).await?;

@@ -251,6 +251,10 @@ pub enum Command {
         /// Backend to use for mounting
         #[arg(long, default_value_t = MountBackend::default())]
         backend: MountBackend,
+
+        /// Allow device special files (default: nodev)
+        #[arg(long)]
+        dev: bool,
     },
     /// Show differences between base filesystem and delta (overlay mode only)
     Diff {

@@ -90,6 +90,8 @@ pub struct FuseMountOptions {
     pub uid: Option<u32>,
     /// Group ID to report for all files (defaults to current group).
     pub gid: Option<u32>,
+    /// Allow device special files (default: nodev).
+    pub dev: bool,
 }
 
 /// Tracks an open file handle
@@ -1203,6 +1205,9 @@ pub fn mount(
     }
     if opts.allow_root {
         mount_opts.push(MountOption::AllowRoot);
+    }
+    if opts.dev {
+        mount_opts.push(MountOption::Dev);
     }
 
     crate::fuser::mount2(fs, &opts.mountpoint, &mount_opts)?;

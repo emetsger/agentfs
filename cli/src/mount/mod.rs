@@ -56,6 +56,8 @@ pub struct MountOpts {
     pub lazy_unmount: bool,
     /// Timeout for mount to become ready.
     pub timeout: Duration,
+    /// Allow device special files (default: nodev).
+    pub dev: bool,
 }
 
 impl MountOpts {
@@ -72,6 +74,7 @@ impl MountOpts {
             auto_unmount: false,
             lazy_unmount: false,
             timeout: DEFAULT_MOUNT_TIMEOUT,
+            dev: false,
         }
     }
 }

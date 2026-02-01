@@ -237,6 +237,7 @@ pub async fn run_cmd(
         auto_unmount: false,
         lazy_unmount: true,
         timeout: FUSE_MOUNT_TIMEOUT,
+        dev: false,
     };
 
     // Mount the overlay filesystem

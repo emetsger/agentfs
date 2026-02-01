@@ -25,6 +25,8 @@ pub struct MountArgs {
     pub gid: Option<u32>,
     /// The mount backend to use (fuse or nfs).
     pub backend: MountBackend,
+    /// Allow device special files (default: nodev).
+    pub dev: bool,
 }
 
 /// List all currently mounted agentfs filesystems

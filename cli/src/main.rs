@@ -159,6 +159,7 @@ fn main() {
             uid,
             gid,
             backend,
+            dev,
         } => match (id_or_path, mountpoint) {
             (Some(id_or_path), Some(mountpoint)) => {
                 if let Err(e) = cmd::mount(cmd::MountArgs {
@@ -171,6 +172,7 @@ fn main() {
                     uid,
                     gid,
                     backend,
+                    dev,
                 }) {
                     eprintln!("Error: {}", e);
                     std::process::exit(1);
